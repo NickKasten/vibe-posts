@@ -1,7 +1,7 @@
 
 # 📄 Product Requirements Document (PRD)
 
-**Product Name:** LinkedPost Agent (Desktop Edition)  
+**Product Name:** "Vibe-Post" LinkedPost Agent (Desktop Edition)  
 **Owner:** Nicholas Kasten  
 **Date:** June 2025  
 **Version:** 1.1
