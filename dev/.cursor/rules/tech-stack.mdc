@@ -5,13 +5,13 @@ alwaysApply: true
 ---
 At all times of development, follow this tech stack:
 
-Frontend: Next.js + TypeScript
-Backend: Supabase (Postgres, MCP)
-Design: TailwindCSS + Framer Motion
-Auth: Supabase Auth or Clerk
-Payments: Stripe or LemonSqueezy
-Email: Resend or Beehiiv or Mailchimp
-Deploy: Vercel
-Rate limit: Upstash Redis
-Analytics: Google Analytics
-Bot Protection: ReCAPTCHA
+**Frontend:** Next.js + TypeScript  
+**Design:** TailwindCSS + Framer Motion  
+**Auth:** Supabase Auth (GitHub + LinkedIn OAuth)  
+**AI API:** User-supplied OpenAI API key  
+**Storage:** Supabase (Postgres) or localStorage  
+**Deployment:** Vercel  
+**Rate Limiting / Queues:** Upstash Redis (optional)  
+**Analytics:** Vercel Analytics or Google Analytics  
+**Email (Optional):** Resend or Mailchimp (for onboarding, support)  
+**Bot Protection:** ReCAPTCHA (if needed)  

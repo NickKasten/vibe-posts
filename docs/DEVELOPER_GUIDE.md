@@ -3,58 +3,91 @@
 
 ## Overview
 
-This guide provides implementation notes for building and extending the LinkedPost Agent desktop app. It assumes you're using Tauri + React + Rust.
+This guide provides implementation notes for building and extending the LinkedPost Agent web app. It assumes you're using Next.js + TypeScript + Supabase.
 
 ---
 
 ## OAuth Integration
 
-### GitHub Device Flow
-Use `oauth2` crate for GitHub auth:
-```rust
-let client = BasicClient::new(
-    ClientId::new(GITHUB_CLIENT_ID),
-    Some(ClientSecret::new(GITHUB_CLIENT_SECRET)),
-    AuthUrl::new("https://github.com/login/device/code").unwrap(),
-    Some(TokenUrl::new("https://github.com/login/oauth/access_token").unwrap())
-);
+### GitHub OAuth (Web)
+Use Supabase Auth or next-auth for GitHub OAuth:
+```typescript
+// Using Supabase Auth
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+// GitHub OAuth
+const { data, error } = await supabase.auth.signInWithOAuth({
+  provider: 'github',
+  options: {
+    scopes: 'read:user repo'
+  }
+})
 ```
 
-### LinkedIn PKCE Flow
-Implement local redirect with embedded server:
-- Start auth in browser
-- Redirect to `http://localhost:PORT/callback`
-- Handle response and exchange code for token
+### LinkedIn OAuth (Web)
+Implement OAuth flow with PKCE:
+```typescript
+// LinkedIn OAuth setup
+const linkedinAuth = {
+  clientId: process.env.LINKEDIN_CLIENT_ID,
+  redirectUri: `${process.env.NEXT_PUBLIC_APP_URL}/auth/linkedin/callback`,
+  scope: 'r_liteprofile w_member_social'
+}
+```
 
 ---
 
 ## GitHub API Fetching
-Use personal access token (PAT) or OAuth to fetch activity:
-```rust
-GET /repos/:owner/:repo/commits
-Authorization: Bearer <token>
+Use GitHub REST API with user's OAuth token:
+```typescript
+const fetchGitHubActivity = async (accessToken: string) => {
+  const response = await fetch('/api/github/activity', {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  })
+  return response.json()
+}
 ```
 
 ---
 
 ## AI Prompt Example
-```json
-{
-  "system": "You are a LinkedIn post generator.",
-  "github_activity": "Added webhook to CI/CD pipeline",
-  "user_context": "Deployed auto-rollback to production",
-  "style": "technical"
+```typescript
+interface AIPrompt {
+  system: string
+  github_activity: string
+  user_context: string
+  style: 'technical' | 'casual' | 'inspiring'
+  // model: 'openai' | 'anthropic' | 'gemini' | 'default-free'
+}
+
+const prompt = {
+  system: "You are a LinkedIn post generator.",
+  github_activity: "Added webhook to CI/CD pipeline",
+  user_context: "Deployed auto-rollback to production",
+  style: "technical"
+  // model: "openai" // or "anthropic", "gemini", or "default-free"
 }
 ```
 
 ---
 
 ## Example Prompt Generation Code
-```rust
-let prompt = format!(
-    "SYSTEM: You are a LinkedIn post generator. Generate professional posts only.\n    GITHUB_ACTIVITY: {}\nUSER_CONTEXT: {}\nSTYLE: {}\n    Respond with valid JSON: {{\"post\": \"...\", \"hashtags\": [\"...\"]}}",
-    activity, context, style
-);
+```typescript
+const generatePrompt = (activity: string, context: string, style: string) => {
+  return `SYSTEM: You are a LinkedIn post generator. Generate professional posts only.
+GITHUB_ACTIVITY: ${sanitizeInput(activity)}
+USER_CONTEXT: ${sanitizeInput(context)}
+STYLE: ${style}
+
+Respond with valid JSON: {"post": "...", "hashtags": ["..."]}`
+}
 ```
 
 ---
@@ -63,4 +96,4 @@ let prompt = format!(
 - Validate JSON before rendering in UI
 - Trim whitespace, enforce char limits
 - Show user a clear editing preview
-
+- Handle API errors gracefully

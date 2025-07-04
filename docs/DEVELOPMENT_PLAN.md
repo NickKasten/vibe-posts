@@ -1,44 +1,43 @@
-# 🚀 Development Plan - LinkedPost Agent Desktop App
+# 🚀 Development Plan - LinkedPost Agent Web App
 
-**Project:** Vibe-Post LinkedPost Agent (Desktop Edition)  
+**Project:** Vibe-Post LinkedPost Agent (Web Edition)  
 **Timeline:** 7-Day MVP Sprint  
-**Architecture:** Tauri + React (TypeScript) + Rust Backend  
-**Security:** Local-first with encrypted token storage
+**Architecture:** Next.js + TypeScript + Supabase  
+**Security:** Cloud-first with encrypted token storage
 
 ---
 
 ## 📋 Executive Summary
 
-This plan outlines the 7-day development sprint to build a secure, desktop-native LinkedIn post generator for developers. The app will fetch GitHub activity, use AI to generate professional posts, and enable secure publishing through LinkedIn's API.
+This plan outlines the 7-day development sprint to build a secure, web-based LinkedIn post generator for developers. The app will fetch GitHub activity, use AI to generate professional posts, and enable secure publishing through LinkedIn's API with cloud convenience.
 
 ---
 
 ## 🏗️ Project Setup & Architecture
 
 ### Core Stack
-- **Frontend:** React 18 + TypeScript + TailwindCSS
-- **Backend:** Rust + Tauri v1.x
-- **Storage:** `tauri-plugin-store` + `keyring` for secure token storage
-- **HTTP Client:** `reqwest` with TLS enforcement
-- **OAuth:** `oauth2` crate for GitHub/LinkedIn flows
+- **Frontend:** Next.js 13+ + TypeScript + TailwindCSS
+- **Backend:** Next.js API Routes + Serverless Functions
+- **Storage:** Supabase (PostgreSQL) + encrypted token storage
+- **Auth:** Supabase Auth or Clerk for OAuth flows
+- **Deployment:** Vercel
 
 ### Project Structure
 ```
-src-tauri/
-├── src/
-│   ├── main.rs              # Tauri app entry
-│   ├── auth/                # OAuth handlers
-│   ├── github/              # GitHub API integration
-│   ├── linkedin/            # LinkedIn API integration
-│   ├── ai/                  # AI prompt generation
-│   ├── security/            # Input sanitization
-│   └── storage/             # Secure token management
 src/
+├── app/                     # Next.js 13+ app directory
+│   ├── api/                 # API routes
+│   │   ├── github/          # GitHub API integration
+│   │   ├── linkedin/        # LinkedIn API integration
+│   │   └── ai/              # AI prompt generation
+│   ├── auth/                # Auth callback pages
+│   ├── dashboard/           # Post library/dashboard
+│   └── globals.css          # Global styles
 ├── components/              # React components
-├── pages/                   # App screens (Welcome, Draft, etc.)
 ├── hooks/                   # Custom React hooks
+├── lib/                     # Utilities and configurations
 ├── types/                   # TypeScript interfaces
-└── utils/                   # Frontend utilities
+└── utils/                   # Helper functions
 ```
 
 ---
@@ -49,27 +48,38 @@ src/
 **Goal:** Set up project structure and implement GitHub authentication
 
 #### Tasks:
-- [ ] Initialize Tauri + React project with TypeScript
-- [ ] Configure TailwindCSS and basic UI framework
-- [ ] Implement GitHub Device Flow OAuth
-- [ ] Set up secure token storage using `keyring`
-- [ ] Create GitHub API client for commit fetching
+- [ ] Initialize Next.js project with TypeScript and TailwindCSS
+- [ ] Configure Supabase project and authentication
+- [ ] Implement GitHub OAuth flow
+- [ ] Set up secure token storage in Supabase
+- [ ] Create GitHub API routes for commit fetching
 - [ ] Basic error handling and logging setup
 
 #### Key Files:
-- `src-tauri/src/auth/github.rs`
-- `src-tauri/src/github/api.rs`
-- `src-tauri/src/storage/tokens.rs`
+- `src/app/api/auth/github/route.ts`
+- `src/app/api/github/activity/route.ts`
+- `src/lib/supabase.ts`
 
 #### Security Implementation:
-```rust
+```typescript
 // Token encryption and storage
-use keyring::Entry;
+import { createClient } from '@supabase/supabase-js'
 
-pub fn store_github_token(token: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let entry = Entry::new("vibe-post", "github_token")?;
-    entry.set_password(token)?;
-    Ok(())
+export const storeGitHubToken = async (userId: string, token: string) => {
+  const supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_KEY!
+  )
+  
+  const { error } = await supabase
+    .from('user_tokens')
+    .upsert({
+      user_id: userId,
+      provider: 'github',
+      encrypted_token: encrypt(token)
+    })
+  
+  if (error) throw error
 }
 ```
 
@@ -81,29 +91,27 @@ pub fn store_github_token(token: &str) -> Result<(), Box<dyn std::error::Error>>
 #### Tasks:
 - [ ] Build input sanitization system (anti-prompt injection)
 - [ ] Create Welcome Screen with GitHub auth flow
-- [ ] Design Q&A interface for user context collection
+- [ ] Design context input interface for user-added context
 - [ ] Implement character limits and validation
-- [ ] Set up routing between screens
+- [ ] Set up app routing and navigation
 
 #### Security Implementation:
-```rust
+```typescript
 // Input sanitization
-pub fn sanitize_user_input(input: &str) -> String {
-    input
-        .replace("```", "")
-        .replace("System:", "")
-        .replace("Assistant:", "")
-        .chars()
-        .filter(|c| c.is_alphanumeric() || " .,!?-_()[]{}".contains(*c))
-        .take(500)
-        .collect()
+export const sanitizeUserInput = (input: string): string => {
+  return input
+    .replace(/```/g, '')
+    .replace(/System:/g, '')
+    .replace(/Assistant:/g, '')
+    .replace(/[^\w\s.,!?-_()[\]{}]/g, '')
+    .slice(0, 500)
 }
 ```
 
 #### UI Components:
 - Welcome screen with "Tell My Story" CTA
-- GitHub consent prompt
-- Adaptive Q&A interface
+- GitHub consent and auth flow
+- Context input form with style selector
 
 ---
 
@@ -112,32 +120,39 @@ pub fn sanitize_user_input(input: &str) -> String {
 
 #### Tasks:
 - [ ] Create structured prompt template system
-- [ ] Implement AI API integration (OpenAI/user-provided)
+- [ ] Implement AI API integration (user-provided OpenAI/Anthropic/Gemini key or default free model if none provided)
 - [ ] Build JSON response validation
 - [ ] Create post editor with live preview
 - [ ] Add tone selection (Technical, Casual, Inspiring)
 - [ ] Implement character count and LinkedIn formatting
 
 #### AI Prompt Template:
-```rust
-let prompt = format!(
-    "SYSTEM: You are a LinkedIn post generator. Generate professional posts only.\n\
-    GITHUB_ACTIVITY: {}\n\
-    USER_CONTEXT: {}\n\
-    STYLE: {}\n\n\
-    Respond with valid JSON: {{\"post\": \"...\", \"hashtags\": [\"...\"]}}",
-    sanitize_user_input(&activity),
-    sanitize_user_input(&context),
-    style // enum: technical|casual|inspiring
-);
+```typescript
+const generatePrompt = (activity: string, context: string, style: string) => {
+  return `SYSTEM: You are a LinkedIn post generator. Generate professional posts only.
+GITHUB_ACTIVITY: ${sanitizeUserInput(activity)}
+USER_CONTEXT: ${sanitizeUserInput(context)}
+STYLE: ${style}
+
+Respond with valid JSON: {"post": "...", "hashtags": ["..."]}`
+}
 ```
 
 #### Response Validation:
-```rust
-#[derive(Deserialize)]
-struct AIResponse {
-    post: String,     // max 1300 chars
-    hashtags: Vec<String>,
+```typescript
+interface AIResponse {
+  post: string      // max 1300 chars
+  hashtags: string[]
+}
+
+const validateAIResponse = (response: any): AIResponse => {
+  if (!response.post || typeof response.post !== 'string') {
+    throw new Error('Invalid post content')
+  }
+  if (response.post.length > 1300) {
+    throw new Error('Post exceeds character limit')
+  }
+  return response as AIResponse
 }
 ```
 
@@ -147,53 +162,63 @@ struct AIResponse {
 **Goal:** Implement LinkedIn OAuth and post preview functionality
 
 #### Tasks:
-- [ ] Set up LinkedIn PKCE OAuth flow
-- [ ] Create local callback server for auth redirect
+- [ ] Set up LinkedIn OAuth flow with callback handling
+- [ ] Create LinkedIn API routes for posting
 - [ ] Implement LinkedIn API client for posting
 - [ ] Build post preview with LinkedIn formatting
 - [ ] Add scheduling functionality (date/time picker)
 - [ ] Create confirmation dialog before posting
 
 #### LinkedIn OAuth Implementation:
-```rust
-// PKCE flow with local server
-use warp::Filter;
-
-async fn start_oauth_server() -> Result<String, Box<dyn std::error::Error>> {
-    let callback = warp::path("callback")
-        .and(warp::query::<HashMap<String, String>>())
-        .map(|params: HashMap<String, String>| {
-            // Handle OAuth callback
-            warp::reply::html("Authorization successful. You can close this window.")
-        });
-    
-    warp::serve(callback)
-        .run(([127, 0, 0, 1], 8080))
-        .await;
-        
-    Ok("success".to_string())
+```typescript
+// LinkedIn OAuth callback handler
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const code = searchParams.get('code')
+  const state = searchParams.get('state')
+  
+  if (!code || !state) {
+    return Response.json({ error: 'Missing code or state' }, { status: 400 })
+  }
+  
+  // Exchange code for access token
+  const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: process.env.LINKEDIN_REDIRECT_URI!,
+      client_id: process.env.LINKEDIN_CLIENT_ID!,
+      client_secret: process.env.LINKEDIN_CLIENT_SECRET!
+    })
+  })
+  
+  const tokens = await tokenResponse.json()
+  // Store tokens securely and redirect
 }
 ```
 
 ---
 
-### Day 6-7: Manual Publishing & Polish
+### Day 6-7: Publishing & Polish
 **Goal:** Complete post workflow and add final polish
 
 #### Tasks:
-- [ ] Implement manual post publishing to LinkedIn
-- [ ] Create post library/dashboard for drafts
+- [ ] Implement manual and scheduled post publishing to LinkedIn
+- [ ] Create post dashboard for drafts and published posts
 - [ ] Add post status tracking (Draft/Scheduled/Posted)
 - [ ] Implement post editing and duplication
-- [ ] Add keyboard shortcuts and accessibility
+- [ ] Add responsive design and accessibility
+- [ ] Deploy to Vercel with environment variables
 - [ ] Final security audit and testing
-- [ ] Create user documentation
 
-#### Post Library Features:
+#### Post Dashboard Features:
 - Filter by status/date
 - Edit/duplicate/delete actions
 - Search functionality
 - Export drafts
+- Scheduled post management
 
 ---
 
@@ -206,7 +231,7 @@ async fn start_oauth_server() -> Result<String, Box<dyn std::error::Error>> {
 - [ ] Structured prompt templates prevent manipulation
 
 ### Token Security:
-- [ ] All tokens encrypted in system keychain
+- [ ] All tokens encrypted in Supabase database
 - [ ] No tokens logged or displayed in UI
 - [ ] Minimal OAuth scopes requested
 - [ ] Token refresh handling implemented
@@ -252,17 +277,18 @@ async fn start_oauth_server() -> Result<String, Box<dyn std::error::Error>> {
 ### Build Process:
 ```bash
 # Development
-npm run tauri dev
+npm run dev
 
 # Production build
-npm run tauri build
+npm run build
 
-# Generate app bundles for macOS/Windows/Linux
+# Deploy to Vercel
+vercel --prod
 ```
 
 ### Distribution Channels:
-1. **Primary:** GitHub Releases with signed binaries
-2. **Secondary:** Package managers (Homebrew, Chocolatey)
+1. **Primary:** Vercel deployment with custom domain
+2. **Secondary:** GitHub Pages for documentation
 3. **Documentation:** README with setup guides
 
 ---
@@ -271,7 +297,7 @@ npm run tauri build
 
 | Metric | Target | Measurement |
 |--------|--------|-------------|
-| Setup Time | < 10 minutes | First post completion |
+| Setup Time | < 5 minutes | First post completion |
 | Workflow Speed | < 2 minutes | Draft to publish |
 | AI Response Time | < 10 seconds | Prompt to generated post |
 | Security Score | Zero violations | Security audit results |
@@ -299,17 +325,18 @@ npm run tauri build
 ## 📚 Resources & Dependencies
 
 ### Required APIs:
-- GitHub API (Personal Access Token or OAuth)
+- GitHub API (OAuth)
 - LinkedIn API (OAuth + Publishing)
-- AI API (OpenAI/Anthropic/user-provided)
+- AI API (user-provided OpenAI/Anthropic/Gemini key or default free model if none provided)
 
 ### Development Tools:
-- Rust toolchain (1.70+)
 - Node.js (18+)
-- Tauri CLI
+- Next.js CLI
+- Supabase CLI
+- Vercel CLI
 - GitHub OAuth App registration
 - LinkedIn Developer App registration
 
 ---
 
-*This plan ensures a secure, user-friendly desktop application that respects developer privacy while providing powerful LinkedIn content generation capabilities.* 
+*This plan ensures a secure, user-friendly web application that respects developer privacy while providing powerful LinkedIn content generation capabilities.* 

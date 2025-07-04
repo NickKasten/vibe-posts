@@ -3,7 +3,7 @@
 
 ## Overview
 
-This guide outlines the core security principles implemented in the LinkedPost Agent desktop app. It includes token handling, prompt injection protection, and response validation.
+This guide outlines the core security principles implemented in the LinkedPost Agent web app. It includes token handling, prompt injection protection, and response validation.
 
 ---
 
@@ -11,9 +11,10 @@ This guide outlines the core security principles implemented in the LinkedPost A
 
 All third-party tokens (GitHub, LinkedIn, AI APIs) are:
 
-- Encrypted using the system keychain (`keyring` or `tauri-plugin-store`)
+- Encrypted and stored in Supabase database with row-level security
 - Never logged, displayed, or transmitted externally
 - Scoped with minimum necessary permissions
+- User-provided OpenAI, Anthropic, or Gemini API keys stored securely or in encrypted localStorage. If no key is provided, a default free model is used.
 
 ---
 
@@ -21,31 +22,31 @@ All third-party tokens (GitHub, LinkedIn, AI APIs) are:
 
 To prevent malicious inputs from manipulating the AI:
 
-### ✅ Input Sanitization Example (Rust)
-```rust
-fn sanitize_user_input(input: &str) -> String {
-    input
-        .replace("```", "")
-        .replace("System:", "")
-        .replace("Assistant:", "")
-        .chars()
-        .filter(|c| c.is_alphanumeric() || " .,!?-_()[]{}".contains(*c))
-        .take(500)
-        .collect()
+### ✅ Input Sanitization Example (TypeScript)
+```typescript
+export const sanitizeUserInput = (input: string): string => {
+  return input
+    .replace(/```/g, '')
+    .replace(/System:/g, '')
+    .replace(/Assistant:/g, '')
+    .replace(/[^\w\s.,!?-_()[\]{}]/g, '')
+    .slice(0, 500)
 }
 ```
 
 ### ✅ Structured Prompt Template
 
 All prompts sent to the AI use a strict format:
-```
-SYSTEM: You are a LinkedIn post generator. Generate professional posts only.
+```typescript
+const generatePrompt = (activity: string, context: string, style: string) => {
+  return `SYSTEM: You are a LinkedIn post generator. Generate professional posts only.
 
-GITHUB_ACTIVITY: [sanitized commit data]
-USER_CONTEXT: [sanitized user input - max 500 chars]
-STYLE: [predefined enum: technical|casual|inspiring]
+GITHUB_ACTIVITY: ${sanitizeUserInput(activity)}
+USER_CONTEXT: ${sanitizeUserInput(context)}
+STYLE: ${style}
 
-Respond with valid JSON: {"post": "content", "hashtags": ["tag1", "tag2"]}
+Respond with valid JSON: {"post": "content", "hashtags": ["tag1", "tag2"]}`
+}
 ```
 
 ---
@@ -55,10 +56,20 @@ Respond with valid JSON: {"post": "content", "hashtags": ["tag1", "tag2"]}
 To ensure AI responses are safe:
 
 - All responses must match a JSON schema:
-  ```json
-  {
-    "post": "string (max 1300 chars)",
-    "hashtags": ["string", "string"]
+  ```typescript
+  interface AIResponse {
+    post: string      // max 1300 chars
+    hashtags: string[]
+  }
+  
+  const validateAIResponse = (response: any): AIResponse => {
+    if (!response.post || typeof response.post !== 'string') {
+      throw new Error('Invalid post content')
+    }
+    if (response.post.length > 1300) {
+      throw new Error('Post exceeds character limit')
+    }
+    return response as AIResponse
   }
   ```
 - Content filters flag suspicious responses
@@ -68,5 +79,5 @@ To ensure AI responses are safe:
 
 ## HTTPS Enforcement
 
-All external requests (GitHub, LinkedIn, AI APIs) use HTTPS. TLS certificate validation is enforced.
+All external requests (GitHub, LinkedIn, AI APIs) use HTTPS. TLS certificate validation is enforced in production deployment.
 

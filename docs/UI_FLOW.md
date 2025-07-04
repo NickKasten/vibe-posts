@@ -13,6 +13,8 @@ Welcome Screen
    ↓
 GitHub Activity Scan Consent
    ↓
+[Option: Skip to Drafting]
+   ↓
 AI-led Adaptive Q&A (3–5 questions)
    ↓
 Live Post Draft + Editing Assistant
@@ -51,6 +53,12 @@ Personal Dashboard (Post Library)
 ---
 
 ## 🤖 3. AI-Led Adaptive Questions (Max 5)
+
+Before starting the AI-led Q&A, the user is given an option:
+- `Answer questions to build my post`
+- `Skip to drafting`
+
+If the user chooses to skip, they are taken directly to the Live Post Draft + Editing Assistant with a blank or minimal draft.
 
 ### If GitHub data found:
 **AI opens with:**
