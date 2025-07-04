@@ -18,6 +18,13 @@ All third-party tokens (GitHub, LinkedIn, AI APIs) are:
 
 ---
 
+## Token Expiration & Refresh Flow
+- Access tokens have a limited lifetime; implement refresh token flow to maintain sessions securely.
+- On token expiration, prompt user to re-authenticate or use refresh token to obtain a new access token.
+- Store refresh tokens securely (httpOnly cookies or secure storage).
+
+---
+
 ## Prompt Injection Protection
 
 To prevent malicious inputs from manipulating the AI:

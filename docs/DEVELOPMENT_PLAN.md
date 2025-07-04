@@ -18,8 +18,8 @@ This plan outlines the 7-day development sprint to build a secure, web-based Lin
 ### Core Stack
 - **Frontend:** Next.js 13+ + TypeScript + TailwindCSS
 - **Backend:** Next.js API Routes + Serverless Functions
-- **Storage:** Supabase (PostgreSQL) + encrypted token storage
-- **Auth:** Supabase Auth or Clerk for OAuth flows
+- **Storage:** Supabase PostgreSQL with AES-256 encrypted token storage
+- **Auth:** Supabase Auth for GitHub and LinkedIn OAuth flows
 - **Deployment:** Vercel
 
 ### Project Structure
@@ -120,7 +120,7 @@ export const sanitizeUserInput = (input: string): string => {
 
 #### Tasks:
 - [ ] Create structured prompt template system
-- [ ] Implement AI API integration (user-provided OpenAI/Anthropic/Gemini key or default free model if none provided)
+- [ ] Implement AI API integration (user-provided OpenAI/Anthropic/Gemini key or Groq Llama 3.1 free tier as fallback)
 - [ ] Build JSON response validation
 - [ ] Create post editor with live preview
 - [ ] Add tone selection (Technical, Casual, Inspiring)
@@ -307,6 +307,13 @@ vercel --prod
 
 ## 🔄 Post-MVP Roadmap
 
+### Groq Llama 3.1 Free Tier Details:
+- **Model:** Llama 3.1 70B Instruct
+- **Rate Limit:** 30 requests/minute, 6000 requests/day
+- **Context Length:** 128k tokens
+- **Cost:** Free tier available
+- **Fallback Strategy:** When user has no API key, use Groq with rate limiting UI
+
 ### Phase 2 Features:
 - Multi-platform templates (Twitter, Medium)
 - Team collaboration features
@@ -322,12 +329,56 @@ vercel --prod
 
 ---
 
+## Error Logging & Monitoring
+- Integrate error/event logging (auth failures, AI errors, post API errors).
+- Use Vercel logs, Sentry, or LogRocket.
+- Add env variables: `LOG_LEVEL`, `SENTRY_DSN`.
+
+## Rate Limiting
+- Implement throttling for OpenAI/LinkedIn API calls to avoid token issues or bans.
+
+## Analytics
+- Track basic usage metrics (e.g., Vercel Analytics, Plausible).
+
+## Day 6: Testing & QA
+- Test mobile responsiveness across devices and browsers.
+
+## Post-MVP Enhancements
+- AI Prompt History: Users can view/reuse past prompts.
+- Export as Markdown: Allow exporting posts for external editing.
+- LinkedIn Card Preview: Show accurate preview for trust/UX.
+
+---
+
 ## 📚 Resources & Dependencies
 
 ### Required APIs:
 - GitHub API (OAuth)
 - LinkedIn API (OAuth + Publishing)
-- AI API (user-provided OpenAI/Anthropic/Gemini key or default free model if none provided)
+- AI API (user-provided OpenAI/Anthropic/Gemini key or Groq Llama 3.1 free tier as fallback)
+
+### Environment Variables:
+```bash
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_KEY=your-service-key
+
+# GitHub OAuth
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+
+# LinkedIn OAuth
+LINKEDIN_CLIENT_ID=your-linkedin-client-id
+LINKEDIN_CLIENT_SECRET=your-linkedin-client-secret
+LINKEDIN_REDIRECT_URI=https://your-app.vercel.app/api/auth/linkedin/callback
+
+# AI APIs (Groq free tier for fallback)
+GROQ_API_KEY=your-groq-key
+
+# Encryption
+ENCRYPTION_KEY=your-32-byte-encryption-key
+```
 
 ### Development Tools:
 - Node.js (18+)

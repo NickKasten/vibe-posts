@@ -30,7 +30,7 @@ The app provides inline editing and one-click publishing to LinkedIn using user-
 ## 🔐 Security Considerations
 
 ### Token Handling
-- Tokens stored securely using Supabase (or localStorage with encryption)
+- Tokens stored securely using Supabase with AES-256 encryption
 - Tokens never logged or shared externally
 - All sensitive interactions occur client-side or via secured backend endpoints
 
@@ -45,13 +45,14 @@ The app provides inline editing and one-click publishing to LinkedIn using user-
 
 | Feature | Description |
 |--------|-------------|
-| GitHub OAuth | Authenticate and fetch latest commits |
+| GitHub OAuth | Server-side OAuth flow to authenticate and fetch latest commits |
 | Context Input | Text field for optional user-added context |
 | AI Post Generator | Uses OpenAI, Anthropic, or Gemini (user’s API key) to write drafts. If no key is provided, a default free model will be used. |
 | Style Selector | Dropdown to choose tone (technical, casual, etc.) |
 | Editor | Edit and preview the post |
-| LinkedIn OAuth | Authenticate and post directly |
-| Token Management | Store API tokens securely in Supabase or browser |
+| LinkedIn OAuth | Server-side OAuth flow to authenticate and post directly |
+| Token Management | Store OAuth and AI API tokens securely in Supabase |
+| Scheduling | Choose a date/time for post publishing (optional) |
 
 ---
 
@@ -61,9 +62,9 @@ The app provides inline editing and one-click publishing to LinkedIn using user-
 |---------------|------------------------------------|
 | UI            | Next.js + TypeScript              |
 | Styling       | TailwindCSS + Framer Motion       |
-| Auth Flow     | Supabase Auth or Clerk (OAuth)    |
-| AI API        | User-supplied OpenAI/Anthropic/Gemini API key (or default free model if none provided)      |
-| Storage       | Supabase (or browser localStorage)|
+| Auth Flow     | Supabase Auth (GitHub & LinkedIn OAuth)    |
+| AI API        | User-supplied OpenAI/Anthropic/Gemini API key (or Groq Llama 3.1 free tier as fallback)      |
+| Storage       | Supabase PostgreSQL with encrypted tokens|
 | Backend Logic | Serverless functions (if needed)  |
 | Deployment    | Vercel                            |
 
@@ -90,6 +91,7 @@ The app provides inline editing and one-click publishing to LinkedIn using user-
 | Performance | Post generated in <10 seconds |
 | Security | No token leaks or unvalidated inputs |
 | Engagement | First post published by 70% of users on first session |
+- The UI is responsive and works well on mobile devices.
 
 ---
 

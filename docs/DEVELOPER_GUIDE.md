@@ -97,3 +97,9 @@ Respond with valid JSON: {"post": "...", "hashtags": ["..."]}`
 - Trim whitespace, enforce char limits
 - Show user a clear editing preview
 - Handle API errors gracefully
+
+## Session Management
+
+- **Logout Flow:** Users can sign out from their account via the profile menu. Ensure tokens are cleared from storage.
+- **Session Expiry:** Sessions expire after a set period of inactivity (e.g., 1 hour). Users are prompted to re-authenticate.
+- **Device Switching:** Logging in on a new device will invalidate the session on the previous device for security.
