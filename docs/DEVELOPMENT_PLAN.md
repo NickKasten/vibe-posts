@@ -54,6 +54,7 @@ src/
 - [ ] Set up secure token storage in Supabase
 - [ ] Create GitHub API routes for commit fetching
 - [ ] Basic error handling and logging setup
+- [ ] Write unit tests for new features (to be fleshed out thoroughly at completion time)
 
 #### Key Files:
 - `src/app/api/auth/github/route.ts`
@@ -94,6 +95,7 @@ export const storeGitHubToken = async (userId: string, token: string) => {
 - [ ] Design context input interface for user-added context
 - [ ] Implement character limits and validation
 - [ ] Set up app routing and navigation
+- [ ] Write unit tests for new features (to be fleshed out thoroughly at completion time)
 
 #### Security Implementation:
 ```typescript
@@ -125,6 +127,8 @@ export const sanitizeUserInput = (input: string): string => {
 - [ ] Create post editor with live preview
 - [ ] Add tone selection (Technical, Casual, Inspiring)
 - [ ] Implement character count and LinkedIn formatting
+- [ ] Write unit tests for new features (to be fleshed out thoroughly at completion time)
+- [ ] Write integration tests for new workflows (to be fleshed out thoroughly at completion time)
 
 #### AI Prompt Template:
 ```typescript
@@ -168,6 +172,8 @@ const validateAIResponse = (response: any): AIResponse => {
 - [ ] Build post preview with LinkedIn formatting
 - [ ] Add scheduling functionality (date/time picker)
 - [ ] Create confirmation dialog before posting
+- [ ] Write unit tests for new features (to be fleshed out thoroughly at completion time)
+- [ ] Write integration tests for new workflows (to be fleshed out thoroughly at completion time)
 
 #### LinkedIn OAuth Implementation:
 ```typescript
@@ -212,6 +218,8 @@ export async function GET(request: Request) {
 - [ ] Add responsive design and accessibility
 - [ ] Deploy to Vercel with environment variables
 - [ ] Final security audit and testing
+- [ ] Write unit tests for new features (to be fleshed out thoroughly at completion time)
+- [ ] Write integration tests for new workflows (to be fleshed out thoroughly at completion time)
 
 #### Post Dashboard Features:
 - Filter by status/date
@@ -257,12 +265,14 @@ export async function GET(request: Request) {
 - Token encryption/decryption
 - AI response validation
 - OAuth flow components
+- For each major feature, a broad unit test task is included in the sprint plan. These should be expanded into detailed, granular tests for all edge cases and logic at the time of feature completion.
 
 ### Integration Tests:
 - GitHub API integration
 - LinkedIn API integration
 - End-to-end post workflow
 - Error handling scenarios
+- For each major integration, a broad integration test task is included in the sprint plan. These should be expanded into comprehensive, scenario-based tests at the time of feature completion.
 
 ### Security Tests:
 - Prompt injection attempts
