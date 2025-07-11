@@ -1,5 +1,5 @@
-import { sanitizeUserInput as baseSanitizeUserInput } from '../../../lib/sanitize';
-import { validateUserInput, validatePostContent, MAX_POST_LENGTH } from '../../../lib/validation';
+import { sanitizeUserInput as baseSanitizeUserInput } from '../../../utils/sanitize';
+import { validateUserInput, validatePostContent, MAX_POST_LENGTH } from '../../../utils/validation';
 
 // Enhanced sanitization for AI output
 function sanitizeUserInput(input: string): string {

@@ -54,4 +54,11 @@ coverage/
 
 # Package manager lock files (uncomment if needed)
 # package-lock.json
-# yarn.lock 
+# yarn.lock
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel 

@@ -1,4 +1,4 @@
-import { supabaseClient, encrypt } from '../../../../lib/supabase';
+import { supabaseClient, encrypt } from '../../../../lib/storage/supabase';
 
 // GitHub OAuth API route
 

@@ -1,4 +1,4 @@
-import { supabaseClient, decrypt } from '../../../../lib/supabase';
+import { supabaseClient, decrypt } from '../../../../lib/storage/supabase';
 
 // GitHub activity fetch API route
 
