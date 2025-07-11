@@ -1,8 +1,8 @@
 
-# 🧭 UI_FLOW.md – First-Time User Flow (Vibe-Post Desktop App)
+# 🧭 UI_FLOW.md – First-Time User Flow (Vibe-Post Web App)
 
 ## 🎯 Goal
-Guide the user through a conversational, assistant-led onboarding experience that collects context, drafts a post, allows editing, and publishes (or schedules) it to LinkedIn.
+Guide the user through a conversational, assistant-led onboarding experience that collects context, drafts a post, allows editing, and publishes (or schedules) it to LinkedIn via a modern web interface.
 
 ---
 
@@ -121,16 +121,18 @@ User can:
 
 ## 🔐 Security Reminders
 
-- All data stays local
-- No posting happens without approval
-- Tokens are stored securely via system keychain
+- All data encrypted and stored securely in Supabase
+- No posting happens without user approval
+- Tokens are encrypted using AES-256 and stored in Supabase database
+- All communications use HTTPS with TLS certificate validation
 
 ---
 
 ## ✅ MVP UI Success Criteria
 
 - Complete flow in < 2 minutes
-- All screens navigable by keyboard or mouse
+- Fully responsive design (mobile, tablet, desktop)
 - AI uses GitHub data intelligently if available
 - Draft is editable with AI assistance
-- No content is posted without user review and sign-in
+- No content is posted without user review and OAuth authentication
+- All interactions work with keyboard navigation for accessibility

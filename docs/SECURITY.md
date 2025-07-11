@@ -14,7 +14,7 @@ All third-party tokens (GitHub, LinkedIn, AI APIs) are:
 - Encrypted and stored in Supabase database with row-level security
 - Never logged, displayed, or transmitted externally
 - Scoped with minimum necessary permissions
-- User-provided OpenAI, Anthropic, or Gemini API keys stored securely or in encrypted localStorage. If no key is provided, a default free model is used.
+- User-provided OpenAI, Anthropic, or Gemini API keys encrypted and stored in Supabase database. If no key is provided, a default free model is used.
 
 ---
 
@@ -87,4 +87,126 @@ To ensure AI responses are safe:
 ## HTTPS Enforcement
 
 All external requests (GitHub, LinkedIn, AI APIs) use HTTPS. TLS certificate validation is enforced in production deployment.
+
+---
+
+## Rate Limiting
+
+### API Rate Limits
+- **GitHub API:** 5000 requests/hour per authenticated user
+- **LinkedIn API:** 500 requests/day per user (publishing), 100 requests/hour (profile data)
+- **AI API:** Varies by provider
+  - OpenAI: 90,000 tokens/minute (varies by tier)
+  - Anthropic: 4,000 requests/minute (varies by tier)
+  - Groq (fallback): 30 requests/minute, 6000 requests/day
+
+### Client-Side Rate Limiting
+```typescript
+// Rate limiting middleware
+export const rateLimitMiddleware = {
+  github: { max: 10, window: '1m' },
+  linkedin: { max: 5, window: '1m' },
+  ai: { max: 20, window: '1m' }
+}
+```
+
+---
+
+## CORS Configuration
+
+### Allowed Origins
+- Production: `https://your-domain.vercel.app`
+- Development: `http://localhost:3000`
+- Staging: `https://staging-your-domain.vercel.app`
+
+### CORS Headers
+```typescript
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-domain.vercel.app']
+    : ['http://localhost:3000'],
+  credentials: true,
+  optionsSuccessStatus: 200
+}
+```
+
+---
+
+## Session Management Security
+
+### Session Configuration
+- **Duration:** 1 hour of inactivity
+- **Storage:** Encrypted session tokens in Supabase
+- **Refresh:** Automatic token refresh before expiry
+- **Logout:** Immediate token invalidation
+
+### Session Security Implementation
+```typescript
+// Session validation middleware
+export const validateSession = async (req: NextRequest) => {
+  const sessionToken = req.cookies.get('session-token')?.value
+  
+  if (!sessionToken) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+  
+  const session = await validateSessionToken(sessionToken)
+  if (!session || session.expires_at < new Date()) {
+    return new Response('Session expired', { status: 401 })
+  }
+  
+  return session
+}
+```
+
+---
+
+## Database Security
+
+### Row-Level Security (RLS)
+```sql
+-- Enable RLS on user_tokens table
+ALTER TABLE user_tokens ENABLE ROW LEVEL SECURITY;
+
+-- Users can only access their own tokens
+CREATE POLICY "Users can only access their own tokens" ON user_tokens
+  FOR ALL USING (auth.uid() = user_id);
+
+-- Admins can access all tokens (for debugging)
+CREATE POLICY "Admins can access all tokens" ON user_tokens
+  FOR ALL USING (auth.jwt() ->> 'role' = 'admin');
+```
+
+### Token Encryption
+```typescript
+import crypto from 'crypto'
+
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY! // 32 bytes
+const ALGORITHM = 'aes-256-gcm'
+
+export const encryptToken = (token: string): string => {
+  const iv = crypto.randomBytes(16)
+  const cipher = crypto.createCipher(ALGORITHM, ENCRYPTION_KEY)
+  cipher.setAAD(Buffer.from('token-encryption'))
+  
+  let encrypted = cipher.update(token, 'utf8', 'hex')
+  encrypted += cipher.final('hex')
+  
+  const authTag = cipher.getAuthTag()
+  return `${iv.toString('hex')}:${encrypted}:${authTag.toString('hex')}`
+}
+
+export const decryptToken = (encryptedToken: string): string => {
+  const [iv, encrypted, authTag] = encryptedToken.split(':')
+  const decipher = crypto.createDecipher(ALGORITHM, ENCRYPTION_KEY)
+  
+  decipher.setAAD(Buffer.from('token-encryption'))
+  decipher.setAuthTag(Buffer.from(authTag, 'hex'))
+  
+  let decrypted = decipher.update(encrypted, 'hex', 'utf8')
+  decrypted += decipher.final('utf8')
+  
+  return decrypted
+}
+```
 
