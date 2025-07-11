@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const prompt = `SYSTEM: You are a LinkedIn post generator. Generate professional posts only.\nGITHUB_ACTIVITY: ${sanitizedActivity}\nUSER_CONTEXT: ${sanitizedContext}\nSTYLE: ${styleValue}\n\nRespond with valid JSON: {"post": "...", "hashtags": ["..."]}`;
 
     // --- AI API call (mocked for now) ---
-    // In production, call OpenAI, Anthropic, Gemini, or Groq API here
+    // In production, call OpenAI, Anthropic, or Gemini API here
     // For now, return a mock response using sanitized input only
     let post = `Here's a LinkedIn post about: ${sanitizedActivity} (${sanitizedContext}) [${styleValue}]`;
     // Final output sanitization

@@ -128,8 +128,7 @@ export const sanitizeUserInput = (input: string): string => {
 
 #### Specific Deliverables:
 - [ ] AI prompt template system with structured formatting
-- [ ] AI API integration with multiple providers (OpenAI, Anthropic, Gemini, Groq)
-- [ ] Fallback to Groq Llama 3.1 when no user API key provided
+- [ ] AI API integration with multiple providers (OpenAI, Anthropic, Gemini)
 - [ ] JSON response validation with schema enforcement
 - [ ] Post editor component with live preview
 - [ ] Character count display with LinkedIn limit validation (1300 chars)
@@ -428,7 +427,7 @@ vercel --prod
 ### Required APIs:
 - GitHub API (OAuth)
 - LinkedIn API (OAuth + Publishing)
-- AI API (user-provided OpenAI/Anthropic/Gemini key or Groq Llama 3.1 free tier as fallback)
+- AI API (user-provided OpenAI/Anthropic/Gemini key)
 
 ### Environment Variables:
 ```bash
@@ -445,9 +444,6 @@ GITHUB_CLIENT_SECRET=your-github-client-secret
 LINKEDIN_CLIENT_ID=your-linkedin-client-id
 LINKEDIN_CLIENT_SECRET=your-linkedin-client-secret
 LINKEDIN_REDIRECT_URI=https://your-app.vercel.app/api/auth/linkedin/callback
-
-# AI APIs (Groq free tier for fallback)
-GROQ_API_KEY=your-groq-key
 
 # Encryption
 ENCRYPTION_KEY=your-32-byte-encryption-key

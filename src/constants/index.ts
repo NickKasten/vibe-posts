@@ -36,11 +36,6 @@ export const AI_PROVIDERS = [
     id: 'google',
     name: 'Google',
     description: 'Gemini models'
-  },
-  {
-    id: 'groq',
-    name: 'Groq (Free)',
-    description: 'Fast Llama 3.1 models'
   }
 ] as const
 

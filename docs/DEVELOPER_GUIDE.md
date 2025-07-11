@@ -257,7 +257,7 @@ Generates LinkedIn post content using AI.
   githubActivity: string
   userContext: string
   style: 'technical' | 'casual' | 'inspiring'
-  provider: 'openai' | 'anthropic' | 'gemini' | 'groq'
+  provider: 'openai' | 'anthropic' | 'gemini'
   apiKey?: string // Optional, uses fallback if not provided
 }
 ```
@@ -417,7 +417,7 @@ CREATE POLICY "Users can only access their own posts" ON posts
 CREATE TABLE user_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  preferred_ai_provider VARCHAR(50) DEFAULT 'groq',
+  preferred_ai_provider VARCHAR(50) DEFAULT 'openai',
   default_post_style VARCHAR(20) DEFAULT 'technical',
   timezone VARCHAR(50) DEFAULT 'UTC',
   notification_preferences JSONB DEFAULT '{"email": true, "push": false}',
@@ -460,7 +460,9 @@ const envSchema = z.object({
   LINKEDIN_REDIRECT_URI: z.string().url(),
   
   // AI APIs
-  GROQ_API_KEY: z.string().min(1),
+  OPENAI_API_KEY: z.string().min(1),
+  ANTHROPIC_API_KEY: z.string().min(1),
+  GEMINI_API_KEY: z.string().min(1),
   
   // Security
   ENCRYPTION_KEY: z.string().length(32),
@@ -502,7 +504,9 @@ LINKEDIN_CLIENT_ID=your-linkedin-client-id
 LINKEDIN_CLIENT_SECRET=your-linkedin-client-secret
 LINKEDIN_REDIRECT_URI=http://localhost:3000/api/auth/linkedin/callback
 
-GROQ_API_KEY=your-groq-api-key
+OPENAI_API_KEY=your-openai-api-key
+ANTHROPIC_API_KEY=your-anthropic-api-key
+GEMINI_API_KEY=your-gemini-api-key
 
 ENCRYPTION_KEY=your-32-character-encryption-key
 

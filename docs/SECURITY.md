@@ -98,7 +98,6 @@ All external requests (GitHub, LinkedIn, AI APIs) use HTTPS. TLS certificate val
 - **AI API:** Varies by provider
   - OpenAI: 90,000 tokens/minute (varies by tier)
   - Anthropic: 4,000 requests/minute (varies by tier)
-  - Groq (fallback): 30 requests/minute, 6000 requests/day
 
 ### Client-Side Rate Limiting
 ```typescript
